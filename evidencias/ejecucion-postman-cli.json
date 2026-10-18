@@ -1,0 +1,8 @@
+﻿{
+    "fecha":  "2026-10-18T18:19:50.1193367-05:00",
+    "herramienta":  "Postman CLI",
+    "baseUrl":  "http://localhost:18086/crm/api",
+    "codigoSalida":  0,
+    "registro":  "resultado-postman-cli.txt",
+    "evidenciaVisual":  "Pendiente de capturas y video en Postman Desktop"
+}
