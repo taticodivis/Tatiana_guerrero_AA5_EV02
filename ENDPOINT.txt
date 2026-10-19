@@ -1,36 +1,34 @@
-CODIVIS - API DE REGISTRO E INICIO DE SESION
-Aprendiz: Tatiana Guerrero
-Evidencia: GA7-220501096-AA5-EV02 (API desarrollada en AA5-EV01)
-Servidor local: http://localhost:18086
+﻿CODIVIS — GA7-220501096-AA5-EV02. API.
 Base URL: http://localhost:18086/crm/api
 
-1. GET http://localhost:18086/crm/api/estado
-Sin cuerpo. Respuesta: 200 API_DISPONIBLE.
+PUBLICOS
+1. GET /estado: 200 API_DISPONIBLE.
+2. POST /registro: formulario usuario, clave, confirmacion.
+   Ejemplo: usuario=pedro, clave=PedroLuis2026!, confirmacion=PedroLuis2026!
+   201 USUARIO_CREADO; 409 USUARIO_DUPLICADO; 400 CAMPOS_OBLIGATORIOS o DATOS_INVALIDOS.
+3. POST /login: formulario usuario, clave.
+   200 AUTENTICACION_CORRECTA y cookie de sesion JSESSIONID.
+   401 CREDENCIALES_INVALIDAS; 400 CAMPOS_OBLIGATORIOS.
+4. POST /logout: sin cuerpo. 200 SESION_CERRADA; invalida la sesion.
 
-2. POST http://localhost:18086/crm/api/registro
-Content-Type: application/x-www-form-urlencoded
-Body (en Postman: x-www-form-urlencoded):
-usuario=tatiana_prueba
-clave=PruebaCodivis2026!
-confirmacion=PruebaCodivis2026!
-Respuestas: 201 USUARIO_CREADO; 409 USUARIO_DUPLICADO;
-400 CAMPOS_OBLIGATORIOS o DATOS_INVALIDOS.
-Usuario: 3 a 40 caracteres, letras ASCII, numeros, punto, guion o guion bajo.
-Clave: 12 a 128 caracteres. Confirmacion debe coincidir.
-El usuario se normaliza a minusculas y se quitan espacios de los extremos.
+CLIENTES — TODAS ESTAS OPERACIONES REQUIEREN SESION
+Sin cookie de sesion valida: 401 AUTENTICACION_REQUERIDA.
+En Postman, ejecutar login y conservar las cookies habilitadas. No requiere token Bearer.
+5. POST /clientes: crear cliente, Body raw JSON.
+   {"nombre":"Pedro","correo":"pedro@example.com","telefono":"3001234567"}
+   201 CLIENTE_CREADO. Respuesta datos contiene el id creado.
+6. GET /clientes: listar. 200 CLIENTES_LISTADOS, datos es un array.
+7. GET /clientes/{id}: consultar uno. 200 CLIENTE_ENCONTRADO; 404 CLIENTE_NO_ENCONTRADO.
+8. PUT /clientes/{id}: actualizar, Body raw JSON con nombre, correo, telefono.
+   200 CLIENTE_ACTUALIZADO; 404 CLIENTE_NO_ENCONTRADO.
+9. DELETE /clientes/{id}: eliminar. 200 CLIENTE_ELIMINADO; 404 CLIENTE_NO_ENCONTRADO.
 
-3. POST http://localhost:18086/crm/api/login
-Content-Type: application/x-www-form-urlencoded
-Body: usuario=tatiana_prueba&clave=PruebaCodivis2026!
-Respuestas: 200 AUTENTICACION_CORRECTA; 401 CREDENCIALES_INVALIDAS;
-400 CAMPOS_OBLIGATORIOS.
-Verifica credenciales; no genera token ni crea sesion.
-
-Formato de respuesta de los tres endpoints: application/json; charset=UTF-8.
-Ejemplo: {"ok":true,"codigo":"AUTENTICACION_CORRECTA","mensaje":"Autenticacion satisfactoria."}
-Metodo incorrecto: 405 METODO_NO_PERMITIDO, cabecera Allow con el permitido.
-Formato de cuerpo incorrecto en registro/login: 415 FORMATO_NO_ADMITIDO.
-Error de almacenamiento: 500 ERROR_INTERNO.
-No hay usuarios predeterminados. Los usuarios persisten en data/usuario.properties.
-La API no acepta cuerpos JSON: configurar Body > x-www-form-urlencoded.
-
+Crear y actualizar clientes: Content-Type application/json.
+Nombre: 2 a 80 caracteres. Correo valido de hasta 120 caracteres y unico entre clientes.
+Telefono opcional: 7 a 25 caracteres de telefono cuando se indica.
+400 DATOS_INVALIDOS ante datos invalidos; 409 CORREO_DUPLICADO ante correo repetido.
+Registro y login: Content-Type application/x-www-form-urlencoded.
+Usuario: 3 a 40 caracteres sin espacios. Clave: 12 a 128 caracteres.
+Respuestas JSON: ok, codigo, mensaje; clientes incluye datos.
+La sesion se cierra con logout, al reiniciar el servidor o tras 30 minutos de inactividad.
+Persistencia local en data/usuario.properties y data/clientes.json; no incluirlos en la entrega.

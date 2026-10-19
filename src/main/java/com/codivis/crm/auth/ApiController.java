@@ -1,10 +1,11 @@
 package com.codivis.crm.auth;
 
 import java.io.IOException;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-/** Contrato del caso: registro y autenticacion con respuestas JSON, sin sesiones. */
+/** Registro y autenticación; la sesión permite acceder a la API de clientes. */
 @RestController
 @RequestMapping("/api")
 public class ApiController {
@@ -35,12 +36,25 @@ public class ApiController {
 
     @PostMapping(value = "/login", consumes = "application/x-www-form-urlencoded")
     public ResponseEntity<Resultado> login(@RequestParam(name = "usuario", required = false) String usuario,
-            @RequestParam(name = "clave", required = false) String clave) {
+            @RequestParam(name = "clave", required = false) String clave, HttpServletRequest solicitud) {
         if (vacio(usuario) || vacio(clave)) return campos();
         boolean correcto = usuarios.autenticar(usuario, clave);
+        if (correcto) {
+            // Renueva la sesión al autenticar y evita reutilizar un identificador previo.
+            var anterior = solicitud.getSession(false);
+            if (anterior != null) anterior.invalidate();
+            solicitud.getSession(true).setAttribute("usuarioAutenticado", usuario.strip().toLowerCase(java.util.Locale.ROOT));
+        }
         return respuesta(correcto ? 200 : 401, correcto,
                 correcto ? "AUTENTICACION_CORRECTA" : "CREDENCIALES_INVALIDAS",
                 correcto ? "Autenticacion satisfactoria." : "Usuario o clave incorrectos.");
+    }
+
+    @PostMapping("/logout")
+    public ResponseEntity<Resultado> salir(HttpServletRequest solicitud) {
+        var sesion = solicitud.getSession(false);
+        if (sesion != null) sesion.invalidate();
+        return respuesta(200, true, "SESION_CERRADA", "Sesión cerrada.");
     }
 
     private static boolean vacio(String texto) { return texto == null || texto.isBlank(); }

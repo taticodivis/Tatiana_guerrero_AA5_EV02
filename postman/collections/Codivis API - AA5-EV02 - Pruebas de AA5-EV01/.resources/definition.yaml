@@ -1,0 +1,18 @@
+$kind: collection
+description: "20 pruebas: sesión, acceso protegido y CRUD de clientes. Usuario pedro. Ejecutar en orden. Postman conserva automáticamente la cookie JSESSIONID. Registro y login usan formularios; clientes usa JSON. Las pruebas 14 y 16 eliminan los dos clientes de demostración creados por la colección."
+variables:
+  baseUrl: http://localhost:18086/crm/api
+  clientePedroId: ""
+  clienteLuisId: ""
+  usuario: ""
+  clave: ""
+  otro: ""
+  inexistente: ""
+scripts:
+  - type: http:beforeRequest
+    code: |-
+      if (pm.info.requestName === "01 - Estado") {
+        pm.collectionVariables.set("clientePedroId", "");
+        pm.collectionVariables.set("clienteLuisId", "");
+      }
+    language: text/javascript

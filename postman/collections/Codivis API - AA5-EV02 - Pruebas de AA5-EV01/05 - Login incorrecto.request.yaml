@@ -1,0 +1,25 @@
+$kind: http-request
+method: POST
+url: "{{baseUrl}}/login"
+order: 5000
+body:
+  type: urlencoded
+  content:
+    - key: "usuario"
+      value: "pedro"
+    - key: "clave"
+      value: "Incorrecta12345!"
+scripts:
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      pm.test("HTTP 401", () => pm.expect(pm.response.code).to.be.oneOf([401]));
+      pm.test("Respuesta JSON y contrato", () => {
+        pm.expect(pm.response.headers.get("Content-Type")).to.include("application/json");
+        const data = pm.response.json();
+        pm.expect(data.codigo).to.be.oneOf(["CREDENCIALES_INVALIDAS"]);
+        pm.expect(data.ok).to.eql(pm.response.code < 300);
+        pm.expect(data.mensaje).to.be.a("string").and.not.empty;
+        pm.expect(data).not.to.have.property("clave");
+        pm.expect(data).not.to.have.property("hash");
+      });
